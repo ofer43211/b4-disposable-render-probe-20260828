@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: b4-disposable-render-probe-20260828
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: off
+    envVars:
+      - key: RELEASE_MARKER
+        value: VERSION_A_20260828
