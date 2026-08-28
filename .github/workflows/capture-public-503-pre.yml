@@ -1,0 +1,36 @@
+name: Capture PUBLIC_503_PRE
+
+on:
+  push:
+    paths:
+      - ".github/workflows/capture-public-503-pre.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Capture exact public response
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p PUBLIC_503_PRE
+          url="https://b4-disposable-render-probe-20260828.onrender.com/"
+          printf '%s\n' "$url" > PUBLIC_503_PRE/request_url.txt
+          date -u +'%Y-%m-%dT%H:%M:%S.%3NZ' > PUBLIC_503_PRE/timestamp_start_utc.txt
+          status="$(curl --http1.1 --silent --show-error --dump-header PUBLIC_503_PRE/headers.raw --output PUBLIC_503_PRE/body.raw --write-out '%{http_code}' "$url")"
+          date -u +'%Y-%m-%dT%H:%M:%S.%3NZ' > PUBLIC_503_PRE/timestamp_end_utc.txt
+          printf '%s\n' "$status" > PUBLIC_503_PRE/status.txt
+          wc -c < PUBLIC_503_PRE/body.raw | tr -d ' ' > PUBLIC_503_PRE/body_size_bytes.txt
+          sha256sum PUBLIC_503_PRE/body.raw | awk '{print $1}' > PUBLIC_503_PRE/body_sha256.txt
+          printf 'STATUS=%s\nBODY_SIZE_BYTES=%s\nBODY_SHA256=%s\n' "$status" "$(cat PUBLIC_503_PRE/body_size_bytes.txt)" "$(cat PUBLIC_503_PRE/body_sha256.txt)"
+          sed -n '1,80p' PUBLIC_503_PRE/headers.raw
+      - name: Upload immutable capture
+        uses: actions/upload-artifact@v4
+        with:
+          name: PUBLIC_503_PRE
+          path: PUBLIC_503_PRE/
+          if-no-files-found: error
