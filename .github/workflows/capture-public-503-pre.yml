@@ -34,3 +34,5 @@ jobs:
           name: PUBLIC_503_PRE
           path: PUBLIC_503_PRE/
           if-no-files-found: error
+
+# Fresh owner-confirmed maintenance capture: 2026-08-29
